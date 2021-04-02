@@ -6,6 +6,7 @@ import org.springframework.boot.runApplication
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.util.*
@@ -23,19 +24,20 @@ fun main(args: Array<String>) {
 class Controller {
 
 	@GetMapping("/stream")
+	@CrossOrigin
 	fun streaming(): ResponseEntity<StreamingResponseBody> {
 		val uuid = UUID.randomUUID().toString()
 		val streamingResponseBody = StreamingResponseBody {
-			for(i in 1..10) {
-				val message = ObjectMapper().writeValueAsString(Message("info", "Hello Streaming $i\n")).toByteArray()
-				val headers = "--$uuid\r\n" +
+			for(i in 1..50) {
+				val message = ObjectMapper().writeValueAsString(Message("info", "Hello Streaming $i")).toByteArray()
+				val headers = "\r\n----$uuid\r\n" +
 						"Content-Type: application/json\r\n" +
 						"Content-Length: " + message.size + "\r\n\r\n"
 				it.write(headers.toByteArray())
 				it.write(message)
-				it.write("\n".toByteArray())
-				it.flush()
-				Thread.sleep(250)
+				it.write("\r\n".toByteArray())
+				it.flush();
+				Thread.sleep(300)
 			}
 		}
 		return ResponseEntity.ok()
